@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 
 const server = express();
 
+const chefroutes = require('./routes/chefs');
+const dishroutes = require('./routes/recipes');
 
 server.use('/public/uploads', express.static('./public'));
 server.use(express.json());
@@ -22,7 +24,8 @@ mongoose.connect(
 );
 
 
-
+server.use('/chefs', chefroutes);
+server.use('/recipes', dishroutes);
 
 
 server.get('/', (req, res, next)=>{
