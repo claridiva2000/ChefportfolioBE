@@ -82,4 +82,52 @@ router.post('/', async function(req, res, next) {
   }
 });
 
+
+//UPDATE chef
+router.put('/:userId', function(req, res) {
+  let chef = {};
+  chef.name = req.body.name;
+  chef.email = req.body.email;
+  chef.location = req.body.location;
+
+  let query = { _id: req.params.userId };
+
+  Chefs.updateOne(query, chef, function(err) {
+    if (err) {
+      console.log(err);
+      return;
+    } else {
+      res.status(201).json({ chef });
+    }
+  });
+});
+
+
+//UPDATE Chef using Patch
+// router.patch("/:userId", (req, res, next) => {
+//   id = req.params.userId;
+//   const updateOps = {};
+//   for (const ops of req.body) {
+//     updateOps[ops.propName] = ops.value;
+//   }
+//   Chefs.update(
+//     { _id: id },
+//     {
+//       $set: updateOps
+//     }
+//   )
+//     .exec()
+//     .then(res => {
+//       console.log(result);
+//       result.status(200).json({
+//         message: "Account Updated, Chef."
+//       });
+//     })
+//     .catch(err => {
+//       console.log(err);
+//       res.status(500).json(err);
+//     });
+// });
+
+
 module.exports = router;
