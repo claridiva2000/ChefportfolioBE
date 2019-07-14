@@ -129,5 +129,16 @@ router.put('/:userId', function(req, res) {
 //     });
 // });
 
+Delete Chef
+router.delete('/:userId', async (req, res, next) => {
+  console.log(req.params.userId);
+  const chef = req.params.userId;
+ Chefs.remove({_id: chef })
+ .exec().then(res=>{
+   res.status(200).on({ message:'Sorry to see you go, Chef!'})
+ }).catch(err=>{
+   res.status(500).json(err)
+ })
+});
 
 module.exports = router;
