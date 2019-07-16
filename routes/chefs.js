@@ -1,13 +1,74 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const Chefs = require('../models/chef-model');
+
+router.post('/', async function(req, res, next) {
+  Chefs.find({ email: req.body.email })
+    .exec()
+    .then(exists => {
+      if (exists.length >= 1) {
+        return res.status(409).json({
+          message: 'User already exists.'
+        });
+      } else {
+        bcrypt.hash(req.body.password, 10, (err, hash) => {
+          if (err) {
+            return res.status(500).json({
+              error: err
+            });
+          } else {
+            const chef = Chefs({
+              _id: new mongoose.Types.ObjectId(),
+              name: req.body.name,
+              location: req.body.location,
+              profilepic: req.body.profilepic,
+              email: req.body.email,
+              password: hash
+            });
+            chef
+              .save()
+              .then(result => {
+                console.log(result);
+                res.status(201).json({
+                  message: `Welcome, Chef, ${result.name}. Let's get cooking!`
+                });
+              })
+              .catch(err => {
+                res.status(500).json({
+                  error: err
+                });
+              });
+          }
+        });
+      }
+    });
+});
+
+// //Add new chef
+// router.post('/', async function(req, res, next) {
+//   const chefBody = req.body;
+//   const chef = new Chefs({
+//     _id: new mongoose.Types.ObjectId(),
+//     name: req.body.name,
+//     email: req.body.email,
+//     location: req.body.location
+//   });
+
+//   try {
+//     let newChef = await chef.save();
+//     res.status(201).send({ response: `Welcome, Chef ${req.body.name}` });
+//   } catch {
+//     res.status(500).send(err);
+//   }
+// });
 
 //Get all Chefs
 router.get('/', (req, res, next) => {
   Chefs.find()
-    .select('name email location _id')
+    .select('name email location _id profilepic')
     .exec()
     .then(docs => {
       const response = {
@@ -18,6 +79,7 @@ router.get('/', (req, res, next) => {
             email: doc.email,
             location: doc.location,
             _id: doc._id,
+            profilepic: doc.profilepic,
             request: {
               type: 'GET',
               url: 'https://chefportfoliopt4.herokuapp.com/chefs/' + doc._id
@@ -64,25 +126,6 @@ router.get('/:userId', (req, res, next) => {
     });
 });
 
-//Add new chef
-router.post('/', async function(req, res, next) {
-  const chefBody = req.body;
-  const chef = new Chefs({
-    _id: new mongoose.Types.ObjectId(),
-    name: req.body.name,
-    email: req.body.email,
-    location: req.body.location
-  });
-
-  try {
-    let newChef = await chef.save();
-    res.status(201).send({ response: `Welcome, Chef ${req.body.name}` });
-  } catch {
-    res.status(500).send(err);
-  }
-});
-
-
 //UPDATE chef
 router.put('/:userId', function(req, res) {
   let chef = {};
@@ -101,7 +144,6 @@ router.put('/:userId', function(req, res) {
     }
   });
 });
-
 
 //UPDATE Chef using Patch
 // router.patch("/:userId", (req, res, next) => {

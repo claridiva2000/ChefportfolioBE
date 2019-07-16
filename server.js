@@ -10,6 +10,7 @@ const server = express();
 const chefroutes = require('./routes/chefs');
 const dishroutes = require('./routes/recipes');
 
+
 server.use('/public/uploads', express.static('./public'));
 server.use(express.json());
 server.use(cors())
