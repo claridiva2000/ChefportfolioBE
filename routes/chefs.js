@@ -5,22 +5,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const checkAuth = require('../middleware/verifytoken');
 
-
 const Chefs = require('../models/chef-model');
 
 //validation
-const {regVal, loginVal} = require('../middleware/validation')
-
-
+const { regVal, loginVal } = require('../middleware/validation');
 
 router.post('/register', async (req, res) => {
   const { error } = regVal(req.body);
-  if(error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send(error.details[0].message);
 
   //email exists?
-  const emailExist = await Chefs.findOne({email: req.body.email});
-  if(emailExist) return res.status(400).send('Email already exists');
-  
+  const emailExist = await Chefs.findOne({ email: req.body.email });
+  if (emailExist) return res.status(400).send('Email already exists');
+
   //Hash Password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -43,107 +40,21 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
-
-router.post('/login', async (req,res)=>{
+router.post('/login', async (req, res) => {
   const { error } = loginVal(req.body);
-  if(error) return res.status(400).send(error.details[0].message);
-//email exists?
-  const chef = await Chefs.findOne({email: req.body.email});
-  if(!chef) return res.status(400).send('Email is invalid');
+  if (error) return res.status(400).send(error.details[0].message);
+  //email exists?
+  const chef = await Chefs.findOne({ email: req.body.email });
+  if (!chef) return res.status(400).send('Email is invalid');
 
   //password correct?
-const validpass = await bcrypt.compare(req.body.password, chef.password);
-if(!validpass) return res.status(400).send('Invalid pass');
+  const validpass = await bcrypt.compare(req.body.password, chef.password);
+  if (!validpass) return res.status(400).send('Invalid pass');
 
-//Create and assign a token
-const token = jwt.sign({_id: chef._id}, process.env.TOKEN_SECRET);
-res.header('auth-token', token).send(token);
-
-
-})
-
-
-// router.post('/register', function(req, res, next) {
-//   Chefs.find({ email: req.body.email })
-//     .exec()
-//     .then(exists => {
-//       if (exists.length >= 1) {
-//         return res.status(409).json({
-//           message: 'User already exists.'
-//         });
-//       } else {
-//         bcrypt.hash(req.body.password, 10, (err, hash) => {
-//           if (err) {
-//             return res.status(500).json({
-//               error: err
-//             });
-//           } else {
-//             const chef = Chefs({
-//               _id: new mongoose.Types.ObjectId(),
-//               name: req.body.name,
-//               location: req.body.location,
-//               profilepic: req.body.profilepic,
-//               email: req.body.email,
-//               password: hash
-//             });
-//             chef
-//               .save()
-//               .then(result => {
-//                 console.log(result);
-//                 res.status(201).json({
-
-//                   message: `Welcome, Chef, ${result.name}. Let's get cooking!`
-//                 });
-//               })
-//               .catch(err => {
-//                 res.status(500).json({
-//                   error: err
-//                 });
-//               });
-//           }
-//         });
-//       }
-//     });
-// });
-
-// router.post('/login', (req, res, next) => {
-//   Chefs.find({ email: req.body.email })
-//     .exec()
-//     .then(chef => {
-//       if (chef.length < 1) {
-//         res.status(401).json({
-//           message: 'Authorization Failed.'
-//         });
-//       }
-//       bcrypt.compare(req.body.password, chef[0].password, (err, result) => {
-//         if (err) {
-//           return res.status(401).json({
-//             message: `Authorization Failed  `
-//           });
-//         }
-//         if (result) {
-//           const token = jwt.sign(
-//             { email: chef[0].email, chefId: chef[0]._id },
-//             'process.env.JWT_KEY',
-//             { expiresIn: '5h' }
-//           );
-//           return res
-//             .status(200)
-//             .json({
-//               message: `Authorization Successful ${chef[0].id} ${
-//                 req.body.password
-//               } -- ${chef[0].password}`,
-//               token: token
-//             });
-//         }
-//         res.status(401).json({ message: 'Authorization Failed' });
-//       });
-//     })
-//     .catch(err => {
-//       res.status(500).json({ error: err });
-//     });
-// });
+  //Create and assign a token
+  const token = jwt.sign({ _id: chef._id }, process.env.TOKEN_SECRET);
+  res.header('auth-token', token).send(token);
+});
 
 //UPDATE chef account info
 router.put('/:userId', checkAuth, function(req, res) {

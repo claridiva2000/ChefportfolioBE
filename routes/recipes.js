@@ -3,43 +3,20 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const checkAuth = require('../middleware/verifytoken');
 
-// const multer = require('multer');
-// const ejs = require('ejs');
-// const path = require('path');
-
-// router.get("/pics", express.static(path.join(__dirname, "./public/uploads")));
-
-// //storage engine
-// const storage = multer.diskStorage({
-//   destination: function(req, file, cb) {
-//     cb(null, __dirname, "./public/uploads");
-//   },
-//   filename: function(res, file, cb) {
-//     cb(
-//       null,
-//       file.fieldname + '-' + Date.now() + path.extname(file.originalname)
-//     );
-//   }
-// });
-
-// const upload = multer({ storage: storage});
-
 const Recipes = require('../models/recipe-model');
 
-//get pics
-// router.get("/recipeImg-1563093257359.jpg", (req, res) => {
-//   res.sendFile(path.join(__dirname, "./public/uploads/recipeImg-1563093257359.jpg"));
-// });
-// upload.single('recipeImg'),
-
 //Add Recipe
-router.post('/', checkAuth ,  function(req, res) {
+router.post('/', checkAuth, function(req, res) {
   const recipe = new Recipes();
   recipe._id = new mongoose.Types.ObjectId();
   recipe.name = req.body.name;
   recipe.ingredients = req.body.ingredients;
   recipe.instructions = req.body.instructions;
-  recipe.picture = req.body.picure === null?req.body.picture= 'https://i.pinimg.com/originals/fd/80/ec/fd80ecec48eba2a9adb76e4133905879.png' : req.body.picture;
+  recipe.picture =
+    req.body.picure === null
+      ? (req.body.picture =
+          'https://i.pinimg.com/originals/fd/80/ec/fd80ecec48eba2a9adb76e4133905879.png')
+      : req.body.picture;
   recipe.description = req.body.description;
   recipe.mealtype = req.body.mealtype;
   recipe.breakfast = req.body.breakfast;
@@ -70,41 +47,16 @@ router.post('/', checkAuth ,  function(req, res) {
 //   });
 // });
 
-//GET recipes
+//GET  All recipes
 router.get('/', (req, res, next) => {
   Recipes.find()
+    .select(
+      'name ingredients instructions picture description mealtype breakfast lunch dinner dessert snack'
+    )
     .populate('chef', 'name location')
     .exec()
     .then(docs => {
-      const response = {
-        count: docs.length,
-        recipes: docs.map(doc => {
-          return {
-            name: doc.name,
-            _id: doc._id,
-            ingredients: doc.ingredients,
-            instructions: doc.instructions,
-            picture: doc.picture,
-            description: doc.description,
-            mealtype: doc.mealtype,
-            breakfast: doc.breakfast,
-            lunch: doc.lunch,
-            dinner: doc.dinner,
-            dessert: doc.dessert,
-            snack: doc.snack,
-            chef: doc.chef,
-            request: {
-              type: 'GET',
-              url: `https://chefportfoliopt4.herokuapp.com/recipes/${doc._id}`
-            }
-          };
-        })
-      };
-      if (docs.length >= 0 ) {
-        res.status(200).json(response);
-      } else {
-        res.status(200).json({ message: "We can't find that recipe" });
-      }
+      res.status(200).json(docs);
     })
     .catch(err => {
       res.status(500).json(err);
@@ -121,16 +73,8 @@ router.get('/:dishId', (req, res, next) => {
     .populate('chef', 'name location')
     .exec()
     .then(doc => {
-      console.log('from database', doc);
-      if (doc && doc.chef!== null) {
-        res.status(200).json({
-          recipe: doc,
-          request: {
-            type: 'GET',
-            description: 'GET one Chef by _id',
-            url: 'https://chefportfoliopt4.herokuapp.com/recipes/' + doc._id
-          }
-        });
+      if (doc) {
+        res.status(200).json(doc);
       } else {
         res.status(404).json({ message: 'no valid entry found for this id' });
       }
@@ -142,7 +86,7 @@ router.get('/:dishId', (req, res, next) => {
 });
 
 //UPDATE recipe
-router.put('/:dishId', checkAuth ,  function(req, res) {
+router.put('/:dishId', checkAuth, function(req, res) {
   let dish = {};
   dish.name = req.body.name;
   dish.ingredients = req.body.ingredients;
@@ -164,34 +108,8 @@ router.put('/:dishId', checkAuth ,  function(req, res) {
   });
 });
 
-//UPDATE Chef using Patch
-// router.patch("/:dishId", (req, res, next) => {
-//   id = req.params.dishId;
-//   const updateOps = {};
-//   for (const ops of req.body) {
-//     updateOps[ops.propName] = ops.value;
-//   }
-//   Recipes.update(
-//     { _id: id },
-//     {
-//       $set: updateOps
-//     }
-//   )
-//     .exec()
-//     .then(res => {
-//       console.log(result);
-//       result.status(200).json({
-//         message: "Recipe updated, Chef."
-//       });
-//     })
-//     .catch(err => {
-//       console.log(err);
-//       res.status(500).json(err);
-//     });
-// });
-
 //Delete Recipe
-router.delete('/:dishId', checkAuth , function(req, res) {
+router.delete('/:dishId', checkAuth, function(req, res) {
   let query = { _id: req.params.dishId };
 
   Recipes.remove(query, function(err) {
