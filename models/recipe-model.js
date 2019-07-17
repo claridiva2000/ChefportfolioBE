@@ -5,7 +5,7 @@ const recipeSchema = mongoose.Schema({
   name: { type: String, required: true },
   ingredients: { type: String, required: true },
   instructions: { type: String },
-  picture: { type: String },
+  picture: { type: String, default:'https://i.pinimg.com/originals/fd/80/ec/fd80ecec48eba2a9adb76e4133905879.png'},
   // recipeImg: {type:String },
   description: { type: String },
   mealtype: { type: String },
@@ -18,5 +18,3 @@ const recipeSchema = mongoose.Schema({
 });
 
 module.exports = mongoose.model('Recipes', recipeSchema);
-
-

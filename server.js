@@ -3,8 +3,9 @@ const cors = require('cors')
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
 
-
+dotenv.config();
 const server = express();
 
 const chefroutes = require('./routes/chefs');
@@ -20,7 +21,7 @@ server.use(morgan('dev'));
 
 
 mongoose.connect(
-  '  mongodb+srv://chefportfolio2:backend@chefportfolio-8idgc.mongodb.net/test?retryWrites=true&w=majority',
+ process.env.DB_CONNECT ,
   { useNewUrlParser: true }
 );
 
